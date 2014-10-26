@@ -29,20 +29,25 @@ readings   = rbind(trainX, testX)
 
 ## Extract only the mean and standard deviation for each measurement
 meanStdIndices = grepl('-(mean|std)\\(',features[,2])
+readings = readings[, meanStdIndices]
 names(readings) = features[meanStdIndices,2]
 names(readings) = gsub("\\(|\\)","",names(readings))
+names(readings) = tolower(names(readings))
 
 ## Use descriptive activity names to name the activities in the data set.
+activityLabels[, 2] = gsub("_", "", tolower(as.character(activityLabels[, 2])))
 activities[,1] = activityLabels[activities[,1], 2]
 names(activities) = "activity"
 
 ## Appropriately label the data set with descriptive activity names.
 names(subjects) = "subjects"
 mergedData = cbind(subjects,activities, readings[!is.na(names(readings))])
+write.table(mergedData,".\\merged_data_set.txt", row.name=FALSE)
 
 ## Creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 mergedDataMelt = melt(mergedData, id=c("subjects","activity"))
-mergedDataMeltDcast = dcast(mergedDataMelt, subjects + activity ~ variable, mean)
+mergedDataMeltDcast = dcast(mergedDataMelt, subjects + activity ~ variable, mean, na.rm = TRUE)
 write.table(mergedDataMeltDcast,".\\tidy_data_set.txt", row.name=FALSE)
+
 
 
